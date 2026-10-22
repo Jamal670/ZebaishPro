@@ -53,7 +53,7 @@ export const NewArrivalsCategories: React.FC = () => {
               <Link
                 key={cat.id}
                 href={`/collection/${cat.slug}`}
-                aria-label={cat.displayTitle || cat.title}
+                aria-label={cat.displayTitle}
                 className="flex-none w-[250px] sm:w-[310px] md:w-[360px] lg:w-[400px] xl:w-[440px] aspect-[472/539] cursor-pointer group/card relative rounded-xl overflow-hidden bg-stone-100 block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
               >
                 <Image
