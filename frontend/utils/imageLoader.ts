@@ -27,6 +27,8 @@ export const IMAGES = {
   storeZainab: '/store_zainab_karachi_1784731993765.jpg',
   storeRoyal: '/store_royal_threads_1784732014623.jpg',
   storeVault: '/store_lawn_vault_1784732035582.jpg',
+  campaignMastaniBg: '/campaign_mastani_bg_1784669097184.jpg',
+  sellerBoutiquePartner: '/seller_boutique_partner_1784730609664.jpg',
 
   // Worn and Loved (UGC photos)
   wornAndLoved1: '/callout_unstitched_1784669045779.jpg',

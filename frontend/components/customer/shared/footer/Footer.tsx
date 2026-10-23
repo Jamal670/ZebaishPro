@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -23,9 +24,12 @@ export const Footer: React.FC = () => {
             <h3 className="text-stone-900 font-semibold text-lg mb-3">Information</h3>
             <ul className="space-y-1 font-normal text-stone-600">
               <li>
-                <span className="hover:text-stone-900 transition-colors cursor-pointer">
+                <Link
+                  href="/privacy-policy"
+                  className="hover:text-stone-900 transition-colors cursor-pointer"
+                >
                   Privacy Policy
-                </span>
+                </Link>
               </li>
               <li>
                 <span className="hover:text-stone-900 transition-colors cursor-pointer">
@@ -33,9 +37,12 @@ export const Footer: React.FC = () => {
                 </span>
               </li>
               <li>
-                <span className="hover:text-stone-900 transition-colors cursor-pointer">
+                <Link
+                  href="/track-order"
+                  className="hover:text-stone-900 transition-colors cursor-pointer"
+                >
                   Track Your Order
-                </span>
+                </Link>
               </li>
             </ul>
           </div>
@@ -47,33 +54,45 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-1 font-normal text-stone-600">
               <li>
-                <span className="hover:text-stone-900 transition-colors cursor-pointer">
+                <Link
+                  href="/about"
+                  className="hover:text-stone-900 transition-colors cursor-pointer"
+                >
                   About Zebaish
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="hover:text-stone-900 transition-colors cursor-pointer">
+                <Link
+                  href="/contact"
+                  className="hover:text-stone-900 transition-colors cursor-pointer"
+                >
                   Contact Us
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="hover:text-stone-900 transition-colors cursor-pointer">
+                <Link
+                  href="/terms-and-conditions"
+                  className="hover:text-stone-900 transition-colors cursor-pointer"
+                >
                   Terms and Conditions
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="hover:text-stone-900 transition-colors font-medium text-stone-800 cursor-pointer">
+                <Link
+                  href="/login"
+                  className="hover:text-stone-900 transition-colors font-medium text-stone-800 cursor-pointer"
+                >
                   Login / Account
-                </span>
+                </Link>
               </li>
               <li className="pt-3 border-t border-stone-200 flex flex-wrap gap-2.5 items-center">
-                <button
-                  type="button"
+                <Link
+                  href="/seller/signup"
                   className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-amber-400 text-stone-950 hover:bg-amber-300 rounded-xs text-[11px] font-bold uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>Become a seller</span>
-                </button>
+                </Link>
                 <div className="flex space-x-4 text-stone-700">
                   <span
                     aria-label="YouTube"

@@ -32,11 +32,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-stone-900 antialiased selection:bg-stone-900 selection:text-white">
+      <body className="min-h-screen flex flex-col bg-white text-stone-900 antialiased selection:bg-stone-900 selection:text-white">
         <Suspense fallback={null}>
           <Header />
         </Suspense>
-        <main className="flex-1">
+        <main className="flex-1 w-full">
           {children}
         </main>
         <Footer />

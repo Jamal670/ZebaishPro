@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Search, Heart, User, ShoppingBag } from 'lucide-react';
 import Sidebar from '@/components/customer/shared/sidebar/Sidebar';
@@ -135,13 +136,13 @@ const HeaderContent: React.FC<HeaderProps> = ({
             </button>
 
             {/* User Account */}
-            <button
-              type="button"
+            <Link
+              href="/login"
               aria-label="User Account"
               className="transition-colors duration-300 focus:outline-none p-1 inline-block hover:opacity-80 cursor-pointer"
             >
               <User className="w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 stroke-[1.5]" />
-            </button>
+            </Link>
 
             {/* Shopping Cart */}
             <button
