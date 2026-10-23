@@ -39,6 +39,7 @@ export interface ProductItem {
   category: string;
   subcategory?: string;
   stitchingStatus?: string;
+  sellerId?: string;
   resellerName?: string;
   resellerRating?: number;
   sellerStoreImageKey?: ImageKey;
@@ -60,6 +61,17 @@ export interface ProductItem {
 }
 
 export type Product = ProductItem;
+
+export interface Seller {
+  slug: string;
+  name: string;
+  avatar: ImageKey;
+  banner?: ImageKey;
+  location: string;
+  joinedAt: string;
+  description: string;
+  totalSales: number;
+}
 
 export interface FilterOptions {
   brands: string[];

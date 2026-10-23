@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Heart,
   ShoppingBag,
@@ -308,13 +309,13 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 </div>
               </div>
 
-              <button
-                type="button"
+              <Link
+                href={`/store/${product.sellerId || 'ayesha-luxury-hub'}`}
                 className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-stone-900 hover:text-black underline flex items-center space-x-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white border border-stone-200 rounded-xs hover:border-stone-400 transition-colors shadow-2xs shrink-0 cursor-pointer"
               >
                 <span>Visit Store</span>
                 <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3 lg:h-3 shrink-0" />
-              </button>
+              </Link>
             </div>
 
             {/* Specifications & Attributes List */}

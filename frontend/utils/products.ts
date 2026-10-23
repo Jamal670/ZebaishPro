@@ -1,8 +1,8 @@
 // utils/products.ts
-// Single source of truth for products across collections and product details.
+// Single source of truth for products across collections, product details, and seller storefronts.
 // Pure static frontend data with no backend dependencies.
 
-import { ProductItem, Review } from '@/types';
+import { ProductItem, Review, Seller } from '@/types';
 import { getImage, ImageKey } from '@/utils/imageLoader';
 import { matchesCollectionCategory } from '@/utils/collections';
 
@@ -22,6 +22,133 @@ export function formatPrice(price: number, currency: string = 'PKR'): string {
   return `${symbol} ${price.toLocaleString()}`;
 }
 
+/**
+ * Computes derived seller review count and weighted average rating across all products.
+ * Weighted mean: reviewCount = Σ product.reviewCount, rating = reviewCount > 0 ? Σ(rating × reviewCount) / reviewCount : 0
+ * Display format: X.X / 5.0 (N Reviews) with 1 Review / 0 Reviews pluralization.
+ */
+export function deriveSellerRating(sellerProducts: ProductItem[]): {
+  rating: number;
+  reviewCount: number;
+  formattedText: string;
+} {
+  let totalReviews = 0;
+  let weightedRatingSum = 0;
+
+  for (const product of sellerProducts) {
+    const rc = Number(product.reviewCount ?? 0);
+    const ar = Number(product.rating ?? product.resellerRating ?? 0);
+    if (rc > 0 && Number.isFinite(rc) && Number.isFinite(ar)) {
+      totalReviews += rc;
+      weightedRatingSum += ar * rc;
+    }
+  }
+
+  const rating = totalReviews > 0 ? weightedRatingSum / totalReviews : 0;
+  const clampedRating = Math.min(Math.max(rating, 0), 5);
+  const flooredCount = Math.floor(totalReviews);
+  const formattedText = `${clampedRating.toFixed(1)} / 5.0 (${flooredCount} ${
+    flooredCount === 1 ? 'Review' : 'Reviews'
+  })`;
+
+  return {
+    rating: clampedRating,
+    reviewCount: flooredCount,
+    formattedText,
+  };
+}
+
+/**
+ * Typed static list of verified sellers.
+ * Shared source for Visit Store links and seller storefront routes.
+ */
+export const SELLERS: Seller[] = [
+  {
+    slug: 'ayesha-luxury-hub',
+    name: 'Ayesha Luxury Hub',
+    avatar: 'storeAyesha',
+    banner: 'coutureShowroom',
+    location: 'Lahore',
+    joinedAt: 'Jan 2023',
+    description:
+      'Authentic 100% original designer leftover suits directly sourced from factory overstocks. Unstitched & Luxury Pret.',
+    totalSales: 450,
+  },
+  {
+    slug: 'karachi-surplus-depot',
+    name: 'Karachi Surplus Depot',
+    avatar: 'storeZainab',
+    banner: 'heroSlide4',
+    location: 'Karachi',
+    joinedAt: 'Mar 2022',
+    description:
+      'Specialized in premium designer summer lawn, breezy chiffons, and authentic festive unstitched ensembles.',
+    totalSales: 280,
+  },
+  {
+    slug: 'royal-threads-lahore',
+    name: 'Royal Threads Lahore',
+    avatar: 'storeRoyal',
+    banner: 'coutureShowroom',
+    location: 'Lahore',
+    joinedAt: 'Nov 2021',
+    description:
+      'Authorized factory surplus curator delivering verified luxury festive attire and signature evening wear.',
+    totalSales: 390,
+  },
+  {
+    slug: 'lawn-vault-multan',
+    name: 'Lawn Vault Multan',
+    avatar: 'storeVault',
+    banner: 'heroSlide4',
+    location: 'Multan',
+    joinedAt: 'Aug 2023',
+    description:
+      'Direct mill surplus and overstock partner offering fine breathable cambric, lawn, and daily staples.',
+    totalSales: 160,
+  },
+  {
+    slug: 'pret-studio-lahore',
+    name: 'Pret Studio Lahore',
+    avatar: 'storeAyesha',
+    banner: 'coutureShowroom',
+    location: 'Lahore',
+    joinedAt: 'May 2023',
+    description:
+      'Contemporary ready-to-wear kurtis, tailored ensembles, and luxury accessories at surplus value.',
+    totalSales: 210,
+  },
+  {
+    slug: 'heritage-revival',
+    name: 'Heritage Revival Studio',
+    avatar: 'storeVault',
+    banner: 'heroSlide4',
+    location: 'Islamabad',
+    joinedAt: 'Feb 2024',
+    description:
+      'Curated archive of vintage artisanal Pakistani textiles and rare designer surplus overruns.',
+    totalSales: 0,
+  },
+];
+
+/**
+ * Look up a seller by unique slug
+ */
+export function getSellerBySlug(slug: string): Seller | undefined {
+  if (!slug) return undefined;
+  const normalized = slug.trim().toLowerCase();
+  return SELLERS.find((seller) => seller.slug.toLowerCase() === normalized);
+}
+
+/**
+ * Resolve products belonging to a particular seller
+ */
+export function getProductsForSeller(sellerSlug: string): ProductItem[] {
+  if (!sellerSlug) return [];
+  const normalized = sellerSlug.trim().toLowerCase();
+  return PRODUCTS.filter((product) => (product.sellerId || '').toLowerCase() === normalized);
+}
+
 export const PRODUCTS: ProductItem[] = [
   // ==========================================
   // 1. Unstitched Collection
@@ -38,6 +165,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Crimson Embroidered Lawn Suit',
     badge: '42% OFF',
     category: 'Unstitched',
+    subcategory: 'Embroidered Lawn',
     stitchingStatus: 'Unstitched',
     fabric: 'Lawn',
     color: 'Red',
@@ -46,6 +174,7 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-maroon', name: 'Maroon', code: '#800000' },
     ],
     sizes: [{ size: 'Unstitched', available: true, stock: 4 }],
+    sellerId: 'ayesha-luxury-hub',
     resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.9,
     sellerStoreImageKey: 'storeAyesha',
@@ -89,6 +218,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Sapphire Pastel Printed Lawn Suit',
     badge: '40% OFF',
     category: 'Unstitched',
+    subcategory: 'Printed Lawn',
     stitchingStatus: 'Unstitched',
     fabric: 'Lawn',
     color: 'Pink',
@@ -97,9 +227,10 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-peach', name: 'Peach Blush', code: '#FFE5B4' },
     ],
     sizes: [{ size: 'Unstitched', available: true, stock: 7 }],
-    resellerName: 'Karachi Surplus Depot',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.8,
-    sellerStoreImageKey: 'storeZainab',
+    sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 40,
     rating: 4.8,
     reviewCount: 19,
@@ -130,6 +261,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Gul Ahmed Luxury Summer Lawn',
     badge: '43% OFF',
     category: 'Unstitched',
+    subcategory: 'Luxury Lawn',
     stitchingStatus: 'Unstitched',
     fabric: 'Lawn',
     color: 'Gold',
@@ -138,6 +270,7 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-beige', name: 'Beige Cream', code: '#F5F5DC' },
     ],
     sizes: [{ size: 'Unstitched', available: true, stock: 3 }],
+    sellerId: 'royal-threads-lahore',
     resellerName: 'Royal Threads Lahore',
     resellerRating: 4.9,
     sellerStoreImageKey: 'storeRoyal',
@@ -171,6 +304,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Alkaram Cambric Shadow Embroidered Suit',
     badge: '41% OFF',
     category: 'Unstitched',
+    subcategory: 'Cambric',
     stitchingStatus: 'Unstitched',
     fabric: 'Cambric',
     color: 'Blue',
@@ -179,6 +313,7 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-navy', name: 'Navy Blue', code: '#0F172A' },
     ],
     sizes: [{ size: 'Unstitched', available: true, stock: 5 }],
+    sellerId: 'lawn-vault-multan',
     resellerName: 'Lawn Vault Multan',
     resellerRating: 4.7,
     sellerStoreImageKey: 'storeVault',
@@ -215,6 +350,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Khaadi Indigo Embroidered Kurti',
     badge: '38% OFF',
     category: 'Ready to Wear',
+    subcategory: 'Cotton Kurti',
     stitchingStatus: 'Ready to Wear',
     fabric: 'Cotton',
     color: 'Blue',
@@ -228,7 +364,8 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: true, stock: 3 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Pret Studio Lahore',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.9,
     sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 38,
@@ -260,6 +397,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Sapphire Contemporary Luxury Pret Kurti',
     badge: '41% OFF',
     category: 'Ready to Wear',
+    subcategory: 'Lawn Kurti',
     stitchingStatus: 'Ready to Wear',
     fabric: 'Lawn',
     color: 'White/Cream',
@@ -273,9 +411,10 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: false, stock: 0 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Zainab Cloth Karachi',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.8,
-    sellerStoreImageKey: 'storeZainab',
+    sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 41,
     rating: 4.8,
     reviewCount: 23,
@@ -305,6 +444,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Ethnic Embroidered Tunic Pret',
     badge: '35% OFF',
     category: 'Ready to Wear',
+    subcategory: 'Embroidered Tunic',
     stitchingStatus: 'Ready to Wear',
     fabric: 'Cotton',
     color: 'Black',
@@ -318,9 +458,10 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: true, stock: 1 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Urban Fashion Resellers',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.7,
-    sellerStoreImageKey: 'storeVault',
+    sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 35,
     rating: 4.7,
     reviewCount: 18,
@@ -350,6 +491,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Limelight Mandarin Collar Pret Kurti',
     badge: '37% OFF',
     category: 'Ready to Wear',
+    subcategory: 'Solid Kurti',
     stitchingStatus: 'Ready to Wear',
     fabric: 'Linen',
     color: 'Yellow',
@@ -363,7 +505,8 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: false, stock: 0 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Punjab Outlet Stock',
+    sellerId: 'royal-threads-lahore',
+    resellerName: 'Royal Threads Lahore',
     resellerRating: 4.6,
     sellerStoreImageKey: 'storeRoyal',
     discountPercentage: 37,
@@ -399,6 +542,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Maria B Emerald Green Luxury Chiffon Suit',
     badge: '40% OFF',
     category: 'Formals',
+    subcategory: 'Chiffon Formal',
     stitchingStatus: 'Stitched',
     fabric: 'Chiffon',
     color: 'Peacock/Emerald',
@@ -412,7 +556,8 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: false, stock: 0 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Couture Vault Islamabad',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 5.0,
     sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 40,
@@ -445,6 +590,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Bareeze Lilac Organza Festive Suit',
     badge: '41% OFF',
     category: 'Formals',
+    subcategory: 'Organza Formal',
     stitchingStatus: 'Stitched',
     fabric: 'Organza',
     color: 'Purple/Lilac',
@@ -458,9 +604,10 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: false, stock: 0 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Royal Threads Lahore',
+    sellerId: 'ayesha-luxury-hub',
+    resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.9,
-    sellerStoreImageKey: 'storeRoyal',
+    sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 41,
     rating: 4.9,
     reviewCount: 27,
@@ -490,6 +637,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Sana Safinaz Peacock Raw Silk Formal',
     badge: '42% OFF',
     category: 'Formals',
+    subcategory: 'Raw Silk Formal',
     stitchingStatus: 'Stitched',
     fabric: 'Raw Silk',
     color: 'Peacock/Emerald',
@@ -503,7 +651,8 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: true, stock: 1 },
       { size: 'X Large', available: false, stock: 0 },
     ],
-    resellerName: 'Karachi Couture Leftover Hub',
+    sellerId: 'karachi-surplus-depot',
+    resellerName: 'Karachi Surplus Depot',
     resellerRating: 4.9,
     sellerStoreImageKey: 'storeZainab',
     discountPercentage: 42,
@@ -535,6 +684,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Deep Maroon Embroidered Festive Suit',
     badge: '40% OFF',
     category: 'Formals',
+    subcategory: 'Velvet Formal',
     stitchingStatus: 'Stitched',
     fabric: 'Velvet',
     color: 'Red',
@@ -548,6 +698,7 @@ export const PRODUCTS: ProductItem[] = [
       { size: 'Large', available: false, stock: 0 },
       { size: 'X Large', available: false, stock: 0 },
     ],
+    sellerId: 'ayesha-luxury-hub',
     resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.8,
     sellerStoreImageKey: 'storeAyesha',
@@ -585,6 +736,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Bareeze Velvet Embroidered Shawl',
     badge: '41% OFF',
     category: 'Accessories',
+    subcategory: 'Velvet Shawl',
     fabric: 'Velvet',
     color: 'Black',
     colors: [
@@ -592,6 +744,7 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-gold', name: 'Antique Gold', code: '#D97706' },
     ],
     sizes: [{ size: 'Free Size (2.5m)', available: true, stock: 6 }],
+    sellerId: 'ayesha-luxury-hub',
     resellerName: 'Ayesha Luxury Hub',
     resellerRating: 4.9,
     sellerStoreImageKey: 'storeAyesha',
@@ -624,6 +777,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Khaadi Luxury Silk Printed Dupatta',
     badge: '42% OFF',
     category: 'Accessories',
+    subcategory: 'Silk Dupatta',
     fabric: 'Silk',
     color: 'Gold',
     colors: [
@@ -631,9 +785,10 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-cream', name: 'Cream Ivory', code: '#FAF9F6' },
     ],
     sizes: [{ size: 'Free Size (2.5m)', available: true, stock: 8 }],
+    sellerId: 'pret-studio-lahore',
     resellerName: 'Pret Studio Lahore',
     resellerRating: 4.8,
-    sellerStoreImageKey: 'storeRoyal',
+    sellerStoreImageKey: 'storeAyesha',
     discountPercentage: 42,
     rating: 4.8,
     reviewCount: 37,
@@ -663,6 +818,7 @@ export const PRODUCTS: ProductItem[] = [
     alt: 'Festive Metallic Embroidered Clutch',
     badge: '38% OFF',
     category: 'Accessories',
+    subcategory: 'Metallic Clutch',
     fabric: 'Raw Silk',
     color: 'Gold',
     colors: [
@@ -670,6 +826,7 @@ export const PRODUCTS: ProductItem[] = [
       { id: 'c-silver', name: 'Silver Gota', code: '#E2E8F0' },
     ],
     sizes: [{ size: 'Standard Clutch', available: true, stock: 4 }],
+    sellerId: 'karachi-surplus-depot',
     resellerName: 'Karachi Surplus Depot',
     resellerRating: 4.7,
     sellerStoreImageKey: 'storeZainab',
